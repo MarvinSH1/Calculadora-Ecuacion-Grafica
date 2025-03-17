@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora Avanzada</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>Calculadora Avanzada</h1>
+    <div>
+      <h2>Ecuaciones Diferenciales</h2>
+      <input
+        type="text"
+        id="ode_equation"
+        placeholder="Ingresa la ecuación diferencial"
+      />
+      <button onclick="solveODE()">Resolver</button>
+      <p id="ode_solution"></p>
+    </div>
+    <div>
+      <h2>Integral Indefinida</h2>
+      <input
+        type="text"
+        id="indefinite_integral"
+        placeholder="Ingresa la expresión"
+      />
+      <button onclick="integrateIndefinite()">Calcular</button>
+      <p id="indefinite_result"></p>
+    </div>
+    <div>
+      <h2>Integral Definida</h2>
+      <input
+        type="text"
+        id="definite_integral"
+        placeholder="Ingresa la expresión"
+      />
+      <input type="number" id="lower_limit" placeholder="Límite inferior" />
+      <input type="number" id="upper_limit" placeholder="Límite superior" />
+      <button onclick="integrateDefinite()">Calcular</button>
+      <p id="definite_result"></p>
+    </div>
+    <div>
+      <h2>Graficar Integral Definida</h2>
+      <input
+        type="text"
+        id="plot_integral"
+        placeholder="Ingresa la expresión"
+      />
+      <input type="number" id="plot_lower" placeholder="Límite inferior" />
+      <input type="number" id="plot_upper" placeholder="Límite superior" />
+      <button onclick="plotIntegral()">Graficar</button>
+      <img id="plot_image" src="" alt="Gráfico de la integral" />
+    </div>
+
+    <script>
+      async function solveODE() {
+        const equation = document.getElementById("ode_equation").value;
+        const response = await fetch("/solve_ode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ equation: equation }),
+        });
+        const data = await response.json();
+        document.getElementById("ode_solution").innerText =
+          data.solution || data.error;
+      }
+
+      async function integrateIndefinite() {
+        const expression = document.getElementById("indefinite_integral").value;
+        const response = await fetch("/integrate_indefinite", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ expression: expression }),
+        });
+        const data = await response.json();
+        document.getElementById("indefinite_result").innerText =
+          data.result || data.error;
+      }
+
+      async function integrateDefinite() {
+        const expression = document.getElementById("definite_integral").value;
+        const lower = document.getElementById("lower_limit").value;
+        const upper = document.getElementById("upper_limit").value;
+        const response = await fetch("/integrate_definite", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            expression: expression,
+            lower: lower,
+            upper: upper,
+          }),
+        });
+        const data = await response.json();
+        document.getElementById("definite_result").innerText =
+          data.result || data.error;
+      }
+
+      async function plotIntegral() {
+        const expression = document.getElementById("plot_integral").value;
+        const lower = document.getElementById("plot_lower").value;
+        const upper = document.getElementById("plot_upper").value;
+        const response = await fetch("/plot_integral", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            expression: expression,
+            lower: lower,
+            upper: upper,
+          }),
+        });
+        const data = await response.json();
+        document.getElementById("plot_image").src =
+          "data:image/png;base64," + data.plot_url;
+      }
+    </script>
+  </body>
+</html>
