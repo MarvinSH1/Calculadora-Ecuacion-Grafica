@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Predicción de Datos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <nav class="w-full bg-blue-600 p-4 flex justify-center space-x-8 mb-8">
+      <a href="/" class="text-white text-lg font-semibold hover:text-gray-200"
+        >Calculadora</a
+      >
+      <a
+        href="/prediction"
+        class="text-white text-lg font-semibold hover:text-gray-200"
+        >Predicción</a
+      >
+    </nav>
+
+    <div class="max-w-lg mx-auto my-10 p-6 bg-white shadow-lg rounded-lg">
+      <h1 class="text-2xl font-bold mb-4">Predicción de Datos Educativos</h1>
+      <form id="predictionForm" class="space-y-4">
+        <div>
+          <label for="maestria" class="block text-gray-700"
+            >Nombre de la Maestría:</label
+          >
+          <input
+            type="text"
+            id="maestria"
+            class="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="ciclo" class="block text-gray-700">Ciclo Escolar:</label>
+          <input
+            type="text"
+            id="ciclo"
+            class="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="aspirantes" class="block text-gray-700"
+            >Número de Aspirantes:</label
+          >
+          <input
+            type="number"
+            id="aspirantes"
+            class="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="ingresados" class="block text-gray-700"
+            >Número de Ingresados:</label
+          >
+          <input
+            type="number"
+            id="ingresados"
+            class="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="egresados" class="block text-gray-700"
+            >Número de Egresados:</label
+          >
+          <input
+            type="number"
+            id="egresados"
+            class="w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Agregar Registro
+        </button>
+      </form>
+    </div>
+
+    <div class="max-w-3xl mx-auto mt-10">
+      <h2 class="text-xl font-bold mb-4">Registros</h2>
+      <table class="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="p-4">Maestría</th>
+            <th>Ciclo Escolar</th>
+            <th>Aspirantes</th>
+            <th>Ingresados</th>
+            <th>Egresados</th>
+          </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+      </table>
+
+      <button
+        id="predictButton"
+        class="mt-6 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+      >
+        Predecir Siguiente Periodo Escolar
+      </button>
+      <p id="alerta" class="mt-4 text-red-500"></p>
+    </div>
+
+    <h2 class="text-xl font-bold mt-10 text-center">Gráfica de Tendencias</h2>
+    <div class="flex justify-center mt-6">
+      <img id="predictionGraph" src="" class="max-w-full h-auto" />
+    </div>
+
+    <script>
+      document
+        .getElementById("predictionForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const data = {
+            maestria: document.getElementById("maestria").value,
+            ciclo: document.getElementById("ciclo").value,
+            aspirantes: document.getElementById("aspirantes").value,
+            ingresados: document.getElementById("ingresados").value,
+            egresados: document.getElementById("egresados").value,
+          };
+
+          const response = await fetch("/prediction_api/add_record", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (result.message) {
+            const table = document.getElementById("dataTable");
+
+            const row = table.insertRow();
+            Object.values(data).forEach(
+              (text) => (row.insertCell().textContent = text)
+            );
+          } else {
+            console.error("Error:", result);
+          }
+        });
+
+      document
+        .getElementById("predictButton")
+        .addEventListener("click", async function () {
+          const tableRows = document.querySelectorAll("#dataTable tr");
+
+          if (tableRows.length < 3) {
+            document.getElementById("alerta").textContent =
+              "Se necesitan al menos 3 registros para predecir";
+            setTimeout(() => {
+              document.getElementById("alerta").textContent = "";
+            }, 3000);
+            return;
+          }
+          const response = await fetch("/prediction_api/predict", {
+            method: "POST",
+          });
+          const data = await response.json();
+          if (data.plot_url) {
+            document.getElementById("predictionGraph").src =
+              "data:image/png;base64," + data.plot_url;
+          } else {
+            console.error("Error en la predicción:", data);
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -4,125 +4,239 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calculadora Avanzada</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <h1>Calculadora Avanzada</h1>
-    <div>
-      <h2>Ecuaciones Diferenciales</h2>
+  <body class="bg-gray-100 min-h-screen flex flex-col items-center">
+    <nav class="w-full bg-blue-600 p-4 flex justify-center space-x-8 mb-8">
+      <a href="/" class="text-white text-lg font-semibold hover:text-gray-200"
+        >Calculadora</a
+      >
+      <a
+        href="/prediction"
+        class="text-white text-lg font-semibold hover:text-gray-200"
+        >Predicción</a
+      >
+    </nav>
+
+    <h1 class="text-4xl font-bold my-8">Calculadora Avanzada</h1>
+
+    <div class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Ecuaciones Diferenciales</h2>
       <input
         type="text"
         id="ode_equation"
         placeholder="Ingresa la ecuación diferencial"
+        class="w-full p-2 border rounded-md mb-4"
       />
-      <button onclick="solveODE()">Resolver</button>
-      <p id="ode_solution"></p>
+      <button
+        onclick="solveODE()"
+        class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-600"
+      >
+        Resolver
+      </button>
+      <div id="ode_solution" class="mt-4 p-2 min-h-12 border rounded-md"></div>
     </div>
-    <div>
-      <h2>Integral Indefinida</h2>
+
+    <div class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Integral Indefinida</h2>
       <input
         type="text"
         id="indefinite_integral"
         placeholder="Ingresa la expresión"
+        class="w-full p-2 border rounded-md mb-4"
       />
-      <button onclick="integrateIndefinite()">Calcular</button>
-      <p id="indefinite_result"></p>
+      <button
+        onclick="integrateIndefinite()"
+        class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600"
+      >
+        Calcular
+      </button>
+      <div
+        id="indefinite_result"
+        class="mt-4 p-2 min-h-12 border rounded-md"
+      ></div>
+      <img
+        id="indefinite_plot_image"
+        class="mt-4 w-full rounded-md border"
+        src=""
+      />
     </div>
-    <div>
-      <h2>Integral Definida</h2>
+
+    <div class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Integral Definida y Graficar</h2>
       <input
         type="text"
         id="definite_integral"
         placeholder="Ingresa la expresión"
+        class="w-full p-2 border rounded-md mb-4"
       />
-      <input type="number" id="lower_limit" placeholder="Límite inferior" />
-      <input type="number" id="upper_limit" placeholder="Límite superior" />
-      <button onclick="integrateDefinite()">Calcular</button>
-      <p id="definite_result"></p>
-    </div>
-    <div>
-      <h2>Graficar Integral Definida</h2>
-      <input
-        type="text"
-        id="plot_integral"
-        placeholder="Ingresa la expresión"
+      <div class="flex space-x-4 mb-4">
+        <input
+          type="number"
+          id="lower_limit"
+          placeholder="Límite inferior"
+          class="w-1/2 p-2 border rounded-md"
+        />
+        <input
+          type="number"
+          id="upper_limit"
+          placeholder="Límite superior"
+          class="w-1/2 p-2 border rounded-md"
+        />
+      </div>
+      <button
+        onclick="integrateAndPlotDefinite()"
+        class="w-full bg-purple-500 text-white p-2 rounded-md hover:bg-purple-600"
+      >
+        Calcular y Graficar
+      </button>
+      <div
+        id="definite_result"
+        class="mt-4 p-2 min-h-12 border rounded-md"
+      ></div>
+      <img
+        id="definite_plot_image"
+        class="mt-4 w-full rounded-md border"
+        src=""
       />
-      <input type="number" id="plot_lower" placeholder="Límite inferior" />
-      <input type="number" id="plot_upper" placeholder="Límite superior" />
-      <button onclick="plotIntegral()">Graficar</button>
-      <img id="plot_image" src="" alt="Gráfico de la integral" />
     </div>
 
     <script>
+      function showErrorMessage(element, message) {
+        element.innerText = message;
+        element.style.color = "red";
+
+        if (element.errorTimer) {
+          clearTimeout(element.errorTimer);
+        }
+        element.errorTimer = setTimeout(() => {
+          element.innerText = "";
+        }, 5000);
+      }
+
       async function solveODE() {
         const equation = document.getElementById("ode_equation").value;
-        const response = await fetch("/solve_ode", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ equation: equation }),
-        });
-        const data = await response.json();
-        document.getElementById("ode_solution").innerText =
-          data.solution || data.error;
+        const solutionElement = document.getElementById("ode_solution");
+
+        if (!equation) {
+          showErrorMessage(solutionElement, "Por favor ingresa una ecuación");
+          return;
+        }
+
+        try {
+          const response = await fetch("/solve_ode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ equation: equation }),
+          });
+          const data = await response.json();
+
+          if (data.solution) {
+            solutionElement.innerHTML = `\\(${data.solution}\\)`;
+            solutionElement.style.color = "black";
+            MathJax.typeset();
+          } else {
+            showErrorMessage(
+              solutionElement,
+              data.error || "Error al resolver la ecuación"
+            );
+          }
+        } catch (error) {
+          showErrorMessage(
+            solutionElement,
+            "Error de conexión con el servidor"
+          );
+        }
       }
 
       async function integrateIndefinite() {
         const expression = document.getElementById("indefinite_integral").value;
-        const response = await fetch("/integrate_indefinite", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ expression: expression }),
-        });
-        const data = await response.json();
-        document.getElementById("indefinite_result").innerText =
-          data.result || data.error;
+        const resultElement = document.getElementById("indefinite_result");
+
+        if (!expression) {
+          showErrorMessage(resultElement, "Por favor ingresa una expresión");
+          return;
+        }
+
+        try {
+          const response = await fetch("/integrate_indefinite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expression: expression }),
+          });
+          const data = await response.json();
+
+          if (data.result) {
+            resultElement.innerHTML = `\\(${data.result}\\)`;
+            resultElement.style.color = "black";
+            MathJax.typeset();
+          } else {
+            showErrorMessage(
+              resultElement,
+              data.error || "Error al calcular la integral"
+            );
+          }
+
+          if (data.plot_url) {
+            document.getElementById("indefinite_plot_image").src =
+              "data:image/png;base64," + data.plot_url;
+          }
+        } catch (error) {
+          showErrorMessage(resultElement, "Error de conexión con el servidor");
+        }
       }
 
-      async function integrateDefinite() {
+      async function integrateAndPlotDefinite() {
         const expression = document.getElementById("definite_integral").value;
         const lower = document.getElementById("lower_limit").value;
         const upper = document.getElementById("upper_limit").value;
-        const response = await fetch("/integrate_definite", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            expression: expression,
-            lower: lower,
-            upper: upper,
-          }),
-        });
-        const data = await response.json();
-        document.getElementById("definite_result").innerText =
-          data.result || data.error;
-      }
+        const resultElement = document.getElementById("definite_result");
 
-      async function plotIntegral() {
-        const expression = document.getElementById("plot_integral").value;
-        const lower = document.getElementById("plot_lower").value;
-        const upper = document.getElementById("plot_upper").value;
-        const response = await fetch("/plot_integral", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            expression: expression,
-            lower: lower,
-            upper: upper,
-          }),
-        });
-        const data = await response.json();
-        document.getElementById("plot_image").src =
-          "data:image/png;base64," + data.plot_url;
+        if (!expression || !lower || !upper) {
+          showErrorMessage(
+            resultElement,
+            "Por favor completa todos los campos"
+          );
+          return;
+        }
+
+        try {
+          const response = await fetch("/plot_integral", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              expression: expression,
+              lower: lower,
+              upper: upper,
+            }),
+          });
+          const data = await response.json();
+
+          if (data.result) {
+            resultElement.innerHTML = `\\(${data.result}\\)`;
+            resultElement.style.color = "black";
+            MathJax.typeset();
+          } else {
+            showErrorMessage(
+              resultElement,
+              data.error || "Error al calcular la integral"
+            );
+          }
+
+          if (data.plot_url) {
+            document.getElementById("definite_plot_image").src =
+              "data:image/png;base64," + data.plot_url;
+          }
+        } catch (error) {
+          showErrorMessage(resultElement, "Error de conexión con el servidor");
+        }
       }
     </script>
   </body>

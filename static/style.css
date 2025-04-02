@@ -1,32 +1,88 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap');
+
+.body{
+  background-color: #ebe7b7;
+  padding: 10px;
+  font-family: 'Roboto', sans-serif;
 }
 
-h1,
+.navbar {
+  background-color: #001F21;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+  border-radius: 10px;
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 700;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: #ecc039;
+  border-radius: 4px;
+}
+
+.nav-link.active {
+  background-color: #DE4F15;
+  border-radius: 4px;
+}
+
+h1 {
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 700;
+  color: #001F21;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 2.5em;
+}
+
 h2 {
-  color: #333;
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 700;
+  color: #001f21;
+  margin: 15px 0;
+  font-size: 1.8em;
 }
 
-input,
-button {
+input[type="text"],
+input[type="number"] {
+  font-family: 'Roboto', sans-serif;
+  padding: 8px;
   margin: 5px;
+  border: 2px solid #001f21;
+  border-radius: 4px;
+  font-size: 1em;
 }
 
 button {
-  padding: 5px 10px;
-  background-color: #007bff;
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 700;
+  background-color: #DE4F15;
   color: white;
   border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #ecc039;
 }
 
-#plot_image {
-  max-width: 100%;
-  height: auto;
-  margin-top: 10px;
+p {
+  font-family: 'Roboto', sans-serif;
+  color: #001F21;
+  margin: 10px 0;
+  font-size: 1.1em;
+  line-height: 1.4;
 }
