@@ -15,7 +15,6 @@ Este proyecto es una calculadora que permite resolver ecuaciones diferenciales, 
 
 - **Frontend:** html, tailwind
 - **Backend:** python, flask
-- **Librerías:** (Ejemplo: Chart.js, Math.js, etc.)
 
 ## 📥 Instalación y Ejecución
 
